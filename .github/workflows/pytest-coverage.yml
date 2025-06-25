@@ -36,9 +36,14 @@ jobs:
     - name: (MacOs only) Install build dependencies
       if: matrix.os == 'macos-latest'
       run: |
-        # libomp is required for OpenMP support when compiling with clang.
-        brew install libomp
-        # Set MACOSX_DEPLOYMENT_TARGET to avoid version mismatch warnings
+        # Install Homebrew LLVM toolchain with OpenMP support
+        brew install llvm libomp
+        if [[ $(uname -m) == "arm64" ]]; then BREW_PREFIX="/opt/homebrew"; else BREW_PREFIX="/usr/local"; fi
+        echo "PATH=$BREW_PREFIX/opt/llvm/bin:$PATH" >> $GITHUB_ENV
+        echo "CC=$BREW_PREFIX/opt/llvm/bin/clang" >> $GITHUB_ENV
+        echo "CXX=$BREW_PREFIX/opt/llvm/bin/clang++" >> $GITHUB_ENV
+        echo "LDFLAGS=-L$BREW_PREFIX/opt/libomp/lib" >> $GITHUB_ENV
+        echo "CPPFLAGS=-I$BREW_PREFIX/opt/libomp/include" >> $GITHUB_ENV
         echo "MACOSX_DEPLOYMENT_TARGET=$(sw_vers -productVersion)" >> $GITHUB_ENV
         echo "MACOSX_DEPLOYMENT_TARGET=${{ env.MACOSX_DEPLOYMENT_TARGET }}"
 
