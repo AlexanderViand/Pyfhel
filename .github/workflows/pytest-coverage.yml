@@ -44,6 +44,9 @@ jobs:
         echo "CXX=$BREW_PREFIX/opt/llvm/bin/clang++" >> $GITHUB_ENV
         echo "LDFLAGS=-L$BREW_PREFIX/opt/libomp/lib" >> $GITHUB_ENV
         echo "CPPFLAGS=-I$BREW_PREFIX/opt/libomp/include" >> $GITHUB_ENV
+        # Build only for the host architecture to avoid missing x86_64 libraries
+        echo "ARCHFLAGS=-arch $(uname -m)" >> $GITHUB_ENV
+        echo "CMAKE_OSX_ARCHITECTURES=$(uname -m)" >> $GITHUB_ENV
         echo "MACOSX_DEPLOYMENT_TARGET=$(sw_vers -productVersion)" >> $GITHUB_ENV
         echo "MACOSX_DEPLOYMENT_TARGET=${{ env.MACOSX_DEPLOYMENT_TARGET }}"
 
