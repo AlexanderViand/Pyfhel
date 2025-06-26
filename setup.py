@@ -401,10 +401,13 @@ class SuperBuildClib(build_clib):
 
         if platform_system == 'Darwin':
             orig_linker_so = self.compiler.linker_so
-            self.compiler.linker_so = [
-                '-dynamiclib' if val == '-bundle' else val
-                for val in orig_linker_so
-            ]
+            if isinstance(orig_linker_so, str):
+                self.compiler.linker_so = orig_linker_so.replace('-bundle', '-dynamiclib')
+            else:
+                self.compiler.linker_so = [
+                    '-dynamiclib' if val == '-bundle' else val
+                    for val in orig_linker_so
+                ]
             build_info['extra_link_args'].append(
                 f"-Wl,-install_name,@loader_path/{lib_file}"
             )
