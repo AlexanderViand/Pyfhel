@@ -33,28 +33,22 @@ jobs:
       with:
         submodules: recursive
 
-    - name: (MacOs only) Install GNU GCC.
+    - name: (MacOs only) Install build dependencies
       if: matrix.os == 'macos-latest'
       run: |
-        brew install gcc libomp
-
-    - name: (MacOs only) Set CC/CXX environment variables to GNU GCC 
-      if: matrix.os == 'macos-latest'
-      run: |
-
-        # Check GCC installation path. Brew installs GCC in /opt/homebrew/bin on Apple Silicon and /usr/local/bin on Intel.
-        if [[ $(uname -m) = "arm64" ]]; then BREW_GCC_PATH="/opt/homebrew/bin"; else BREW_GCC_PATH="/usr/local/bin"; fi
-        echo "GCC installed at $BREW_GCC_PATH"
-
-        # Set CC/CXX environment variables to GNU GCC
-        echo "CC=$BREW_GCC_PATH/$(ls $BREW_GCC_PATH | grep ^gcc-[0-9] | sort -V -r | head -n 1)" >> $GITHUB_ENV
-        echo "CXX=$BREW_GCC_PATH/$(ls $BREW_GCC_PATH | grep ^g++-[0-9] | sort -V -r | head -n 1)" >> $GITHUB_ENV
-        echo "CC=${{ env.CC }}"
-        echo "CXX=${{ env.CXX }}"
-        
-        # Set MACOSX_DEPLOYMENT_TARGET to avoid version mismatch warnings
+        # Install Homebrew LLVM toolchain with OpenMP support
+        brew install llvm libomp
+        if [[ $(uname -m) == "arm64" ]]; then BREW_PREFIX="/opt/homebrew"; else BREW_PREFIX="/usr/local"; fi
+        echo "PATH=$BREW_PREFIX/opt/llvm/bin:$PATH" >> $GITHUB_ENV
+        echo "CC=$BREW_PREFIX/opt/llvm/bin/clang" >> $GITHUB_ENV
+        echo "CXX=$BREW_PREFIX/opt/llvm/bin/clang++" >> $GITHUB_ENV
+        echo "CPPFLAGS=-I$BREW_PREFIX/opt/libomp/include" >> $GITHUB_ENV
+        echo "CFLAGS=-arch $(uname -m)" >> $GITHUB_ENV
+        echo "CXXFLAGS=-arch $(uname -m)" >> $GITHUB_ENV
+        echo "LDFLAGS=-arch $(uname -m) -L$BREW_PREFIX/opt/libomp/lib" >> $GITHUB_ENV
+        echo "ARCHFLAGS=-arch $(uname -m)" >> $GITHUB_ENV
+        echo "CMAKE_OSX_ARCHITECTURES=$(uname -m)" >> $GITHUB_ENV
         echo "MACOSX_DEPLOYMENT_TARGET=$(sw_vers -productVersion)" >> $GITHUB_ENV
-        echo "MACOSX_DEPLOYMENT_TARGET=${{ env.MACOSX_DEPLOYMENT_TARGET }}"
 
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v4
@@ -71,8 +65,7 @@ jobs:
 
     - name: Install package verbosely
       run: |
-
-        touch .cov # Create a .cov file to trigger Cython compilation with coverage support 
+        python -c "open('.cov','w').close()" # trigger Cython compilation with coverage support
         ls
         python -m pip install -v -v .
 
