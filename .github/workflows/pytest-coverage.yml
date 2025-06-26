@@ -73,7 +73,7 @@ jobs:
         CMAKE_OSX_ARCHITECTURES: ${{ env.CMAKE_OSX_ARCHITECTURES }}
         MACOSX_DEPLOYMENT_TARGET: ${{ env.MACOSX_DEPLOYMENT_TARGET }}
       run: |
-        touch .cov # Create a .cov file to trigger Cython compilation with coverage support
+        python -c "open('.cov','w').close()" # trigger Cython compilation with coverage support
         ls
         python -m pip install -v -v .
 
