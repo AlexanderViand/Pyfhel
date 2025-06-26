@@ -42,9 +42,10 @@ jobs:
         echo "PATH=$BREW_PREFIX/opt/llvm/bin:$PATH" >> $GITHUB_ENV
         echo "CC=$BREW_PREFIX/opt/llvm/bin/clang" >> $GITHUB_ENV
         echo "CXX=$BREW_PREFIX/opt/llvm/bin/clang++" >> $GITHUB_ENV
-        echo "LDFLAGS=-L$BREW_PREFIX/opt/libomp/lib" >> $GITHUB_ENV
         echo "CPPFLAGS=-I$BREW_PREFIX/opt/libomp/include" >> $GITHUB_ENV
-        # Build only for the host architecture to avoid missing x86_64 libraries
+        echo "CFLAGS=-arch $(uname -m)" >> $GITHUB_ENV
+        echo "CXXFLAGS=-arch $(uname -m)" >> $GITHUB_ENV
+        echo "LDFLAGS=-arch $(uname -m) -L$BREW_PREFIX/opt/libomp/lib" >> $GITHUB_ENV
         echo "ARCHFLAGS=-arch $(uname -m)" >> $GITHUB_ENV
         echo "CMAKE_OSX_ARCHITECTURES=$(uname -m)" >> $GITHUB_ENV
         echo "MACOSX_DEPLOYMENT_TARGET=$(sw_vers -productVersion)" >> $GITHUB_ENV
@@ -63,30 +64,12 @@ jobs:
       run: python -m pip install --upgrade pip
 
     - name: Install package verbosely
-      env:
-        CC: ${{ env.CC }}
-        CXX: ${{ env.CXX }}
-        LDFLAGS: ${{ env.LDFLAGS }}
-        CPPFLAGS: ${{ env.CPPFLAGS }}
-        PATH: ${{ env.PATH }}
-        ARCHFLAGS: ${{ env.ARCHFLAGS }}
-        CMAKE_OSX_ARCHITECTURES: ${{ env.CMAKE_OSX_ARCHITECTURES }}
-        MACOSX_DEPLOYMENT_TARGET: ${{ env.MACOSX_DEPLOYMENT_TARGET }}
       run: |
         python -c "open('.cov','w').close()" # trigger Cython compilation with coverage support
         ls
         python -m pip install -v -v .
 
     - name: Test with pytest
-      env:
-        CC: ${{ env.CC }}
-        CXX: ${{ env.CXX }}
-        LDFLAGS: ${{ env.LDFLAGS }}
-        CPPFLAGS: ${{ env.CPPFLAGS }}
-        PATH: ${{ env.PATH }}
-        ARCHFLAGS: ${{ env.ARCHFLAGS }}
-        CMAKE_OSX_ARCHITECTURES: ${{ env.CMAKE_OSX_ARCHITECTURES }}
-        MACOSX_DEPLOYMENT_TARGET: ${{ env.MACOSX_DEPLOYMENT_TARGET }}
       run: |
         python -m pip install cython==3.0.2 pytest-cov
         pytest --cov .
