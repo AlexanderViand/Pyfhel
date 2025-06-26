@@ -131,7 +131,7 @@ platforms = ["Linux", "Windows", "Darwin"]
   #--> Afhel
   [cpplibraries.Afhel]
   mode = 'standard'        # standard/cmake
-  lib_type = 'shared'      # static/shared
+  lib_type = 'static'      # static/shared
   sources = ['Pyfhel/Afhel/Afseal.cpp',]
   include_dirs = ['Pyfhel/Afhel',]
   define_macros = [
@@ -144,8 +144,8 @@ platforms = ["Linux", "Windows", "Darwin"]
     {Linux = ["-std=c++17","-O3","-fopenmp"]} ]
   extra_link_args = [
     {Windows = []},
-    {Darwin = ["-Wl,-rpath,@loader_path/.", "-fopenmp","-Wl,-no_compact_unwind"]},
-    {Linux = ["-Wl,-rpath=$ORIGIN/.", "-fopenmp"]} ]
+    {Darwin = []},
+    {Linux = []} ]
   libraries = ['SEAL']
 
 
