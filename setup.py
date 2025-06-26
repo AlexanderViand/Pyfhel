@@ -400,15 +400,17 @@ class SuperBuildClib(build_clib):
         lib_file = f"{get_lib_prefix()}{lib_name}{get_lib_suffix('shared')}"
 
         if platform_system == 'Darwin':
+            orig_linker_so = self.compiler.linker_so
             self.compiler.linker_so = [
                 '-dynamiclib' if val == '-bundle' else val
-                for val in self.compiler.linker_so
+                for val in orig_linker_so
             ]
             build_info['extra_link_args'].append(
                 f"-Wl,-install_name,@loader_path/{lib_file}"
             )
+        
         self.compiler.link_shared_object(
-            objects,                     
+            objects,
             lib_file,
             output_dir          = self.build_clib,
             target_lang         = language,
@@ -417,6 +419,9 @@ class SuperBuildClib(build_clib):
             extra_postargs      = build_info['extra_link_args'],
             build_temp          = self.build_temp,
         )
+
+        if platform_system == 'Darwin':
+            self.compiler.linker_so = orig_linker_so
         # Post build
         build_info.update({
             'built_lib_files': [str(Path(self.build_clib).absolute() / lib_file)]

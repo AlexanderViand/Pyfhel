@@ -48,7 +48,6 @@ jobs:
         echo "ARCHFLAGS=-arch $(uname -m)" >> $GITHUB_ENV
         echo "CMAKE_OSX_ARCHITECTURES=$(uname -m)" >> $GITHUB_ENV
         echo "MACOSX_DEPLOYMENT_TARGET=$(sw_vers -productVersion)" >> $GITHUB_ENV
-        echo "MACOSX_DEPLOYMENT_TARGET=${{ env.MACOSX_DEPLOYMENT_TARGET }}"
 
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v4
@@ -64,13 +63,30 @@ jobs:
       run: python -m pip install --upgrade pip
 
     - name: Install package verbosely
+      env:
+        CC: ${{ env.CC }}
+        CXX: ${{ env.CXX }}
+        LDFLAGS: ${{ env.LDFLAGS }}
+        CPPFLAGS: ${{ env.CPPFLAGS }}
+        PATH: ${{ env.PATH }}
+        ARCHFLAGS: ${{ env.ARCHFLAGS }}
+        CMAKE_OSX_ARCHITECTURES: ${{ env.CMAKE_OSX_ARCHITECTURES }}
+        MACOSX_DEPLOYMENT_TARGET: ${{ env.MACOSX_DEPLOYMENT_TARGET }}
       run: |
-
-        touch .cov # Create a .cov file to trigger Cython compilation with coverage support 
+        touch .cov # Create a .cov file to trigger Cython compilation with coverage support
         ls
         python -m pip install -v -v .
 
     - name: Test with pytest
+      env:
+        CC: ${{ env.CC }}
+        CXX: ${{ env.CXX }}
+        LDFLAGS: ${{ env.LDFLAGS }}
+        CPPFLAGS: ${{ env.CPPFLAGS }}
+        PATH: ${{ env.PATH }}
+        ARCHFLAGS: ${{ env.ARCHFLAGS }}
+        CMAKE_OSX_ARCHITECTURES: ${{ env.CMAKE_OSX_ARCHITECTURES }}
+        MACOSX_DEPLOYMENT_TARGET: ${{ env.MACOSX_DEPLOYMENT_TARGET }}
       run: |
         python -m pip install cython==3.0.2 pytest-cov
         pytest --cov .
